@@ -1,4 +1,3 @@
-# asdsad 2
 setRefClass("ClassifierMetricsClass",
             fields = c("precision", "recall", "sensitivity", "specificity", "accuracy", "F1Score", "FBetaScore", "tp", "fp", "fn", "tn"))
 
