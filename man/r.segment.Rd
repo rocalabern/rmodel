@@ -1,0 +1,28 @@
+\name{r.segment}
+\alias{r.segment}
+\title{r.segment}
+\usage{
+  r.segment(dades, segmentacion, prefix = "Grupo",
+    link = " ", labelText = FALSE, labelNumeric = FALSE,
+    missing = NA)
+}
+\arguments{
+  \item{dades}{dataframe}
+
+  \item{segmentacion}{Array of strings. Names of the
+  columns to create segmentation. Those variables must be
+  categorical.}
+}
+\value{
+  An array of numeric or labels according to segmentation.
+}
+\description{
+  r.segment
+}
+\seealso{
+  \code{\link{r.binning}} \code{\link{r.segment}}
+  \code{\link{r.segment.target}}
+  \code{\link{r.segment.dataframe}}
+  \code{\link{r.segment.target.table}}
+}
+

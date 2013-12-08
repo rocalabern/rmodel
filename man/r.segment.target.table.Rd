@@ -1,0 +1,37 @@
+\name{r.segment.target.table}
+\alias{r.segment.target.table}
+\title{r.segment.target.table}
+\usage{
+  r.segment.target.table(dades, segmentacion, target,
+    targetValue = NULL, prefix = "Grupo", link = " ",
+    labelText = FALSE, labelNumeric = FALSE)
+}
+\arguments{
+  \item{dades}{dataframe}
+
+  \item{segmentacion}{Array of strings. Names of the
+  columns to create segmentation. Those variables must be
+  categorical.}
+
+  \item{target}{String. Name of the target column to
+  calculate means for each segment. If targetValue is
+  provided, then means are not calculated, and percentatge
+  of counting targetValue is provided instead.}
+
+  \item{targetValue}{Numeric or Categorical. Value of
+  target column to calculate counts instead of means.}
+}
+\value{
+  An array of percentages of target for each segmentation
+  with labels.
+}
+\description{
+  r.segment.target.table
+}
+\seealso{
+  \code{\link{r.binning}} \code{\link{r.segment}}
+  \code{\link{r.segment.target}}
+  \code{\link{r.segment.dataframe}}
+  \code{\link{r.segment.target.table}}
+}
+

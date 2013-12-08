@@ -1,0 +1,13 @@
+\name{r.getAdj.corr}
+\alias{r.getAdj.corr}
+\title{r.getAdj.corr}
+\usage{
+  r.getAdj.corr(df, methodCorr = "spearman",
+    quantileCutOff = 0.6, absolute = TRUE,
+    normalize = TRUE, removeAutoCycles = TRUE,
+    undirected = TRUE, useColumnNames = TRUE)
+}
+\description{
+  r.getAdj.corr
+}
+

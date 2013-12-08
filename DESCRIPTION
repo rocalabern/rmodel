@@ -8,4 +8,8 @@ Maintainer: Roc Alabern <roc.alabern@gmail.com>
 Description: Tools for models
 License: GPLv2
 Collate:
+    'rmodel_dataanalysis.R'
+    'rmodel_datamanipulation.R'
+    'rmodel_modelevaluation.R'
+    'rmodel_tools.R'
     'rmodel.R'

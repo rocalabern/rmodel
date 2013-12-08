@@ -3,6 +3,39 @@ setRefClass("ClassifierMetricsClass",
 
 classifierMetricsConstructor <- getRefClass("ClassifierMetricsClass")
 
+#' r.spline
+#' @export
+r.spline <- function (
+  y,
+  x = NULL,
+  scale = 1,
+  resolution = 100,
+  center = F,
+  norm = F)
+{
+  y = r.toColumns(y)
+  y = y[,1]
+  n <- length(y)
+  
+  if(missing(x)) {
+    x = 1:n
+  } else {
+    x = r.toColumns(x)
+    x = x[,1]   
+  }
+  
+  spl =spline(scale*x, y, n=resolution)
+  spl = spl$y
+  if (center) {
+    spl = spl-mean(spl)
+  }
+  if (norm) {
+    spl = spl/max(abs(spl))
+  }
+  
+  return (spl)
+}
+
 #' r.pca
 #' @export
 r.pca <- function (x)
@@ -65,269 +98,155 @@ r.reg.logistic <- function (y, x, intercept = T, main='Logistic Reg.',  cex=0.3,
   return(reglog)
 }
 
-#' r.dist
+#' r.getDF.cleaned
 #' @export
-r.dist <- function (x, bandwidth=0.25, kernel = "epanech", range.x = NULL, ...)
+r.getDF.cleaned <- function(datosInput,
+                            filterNA = TRUE,
+                            filterNAN = TRUE,
+                            filterInfinite = TRUE,
+                            filterConstants = FALSE,
+                            verbose = FALSE)
 {
-  #Kernel density estimation (Parzen-Rosenblatt window method)
-  require(KernSmooth)
-  
-  if(missing(range.x) || is.null(range.x)) {
-    minX=min(x)
-    maxX=max(x)
-    if (minX!=round(minX)) {
-      minX=minX-bandwidth
+  if (verbose) cat("\nCleaning dataframe...")
+  datosOutput = datosInput
+  if (filterNA) {
+    ind = 1:nrow(datosOutput)
+    labels = names(datosOutput)
+    for (ilabel in labels) {
+      column = datosOutput[, ilabel]
+      ind = intersect(ind, which(!is.na(column)))
     }
-    if (maxX!=round(maxX)) {
-      maxX=maxX+bandwidth
+    datosOutput = datosOutput[ind, ]
+  }
+  if (filterNAN && !filterNA) {
+    ind = 1:nrow(datosOutput)
+    labels = names(datosOutput)
+    for (ilabel in labels) {
+      column = datosOutput[, ilabel]
+      ind = intersect(ind, which(!is.nan(column)))
     }
-    range.x=c(minX,maxX)
+    datosOutput = datosOutput[ind, ]   
   }
-  
-  mdist = bkde(x=x, kernel=kernel, bandwidth=bandwidth, range.x=range.x)
-  #hist(x)
-  r.plot(x=mdist[[1]], y=mdist[[2]], ...)
-  return(mdist) 
-}
-
-#' r.R2
-#' @export
-r.R2 <- function (y, x) {
-  SSerr=sum((y-x)^2)
-  SStot=sum((mean(y)-y)^2)
-  R2 = 1 - SSerr/SStot
-  return(R2)
-}
-
-#' r.R2Adjusted
-#' @export
-r.R2Adjusted <- function (y, x, p, n) {
-  SSerr=sum((y-x)^2)
-  SStot=sum((mean(y)-y)^2)
-  R2 = 1 - SSerr/SStot
-  R2Adjusted = R2 - (1-R2)*p/(n-p-1)
-  return(R2Adjusted)
-}
-
-#' r.validate
-#' @export
-r.validate <- function(score,fuga, perc=0.2, mode = 0) {
-  if (mode==1) {
-    indOpt = sort(fuga, decreasing=TRUE, index.return=TRUE)
-    fuga = fuga[indOpt$ix]
-    score = score[indOpt$ix]
-  } else if (mode==-1){
-    indOpt = sort(fuga, decreasing=FALSE, index.return=TRUE)
-    fuga = fuga[indOpt$ix]
-    score = score[indOpt$ix]
+  if (filterInfinite) {
+    ind = 1:nrow(datosOutput)
+    labels = names(datosOutput)
+    for (ilabel in labels) {
+      column = datosOutput[, ilabel]
+      ind = intersect(ind, which(!is.infinite(column)))
+    }
+    datosOutput = datosOutput[ind, ]    
   }
-  indSorted = sort(score, decreasing=TRUE, index.return=TRUE)
-  pos = round(perc*length(fuga))
-  return (sum(fuga[indSorted$ix[1:pos]])/sum(fuga)) 
+  if (filterConstants) {
+    ind = 1:ncol(datosOutput)
+    for (icol in 1:ncol(datosOutput)) {
+      column = datosOutput[, icol]
+      if (var(column)==0) ind = setdiff(ind, icol)
+    }
+    datosOutput = datosOutput[, ind]
+  }
+  if (verbose) {
+    cat(paste0("\nFil=", nrow(datosInput), " | Col=", ncol(datosInput)))
+    cat(paste0("\nFil=", nrow(datosOutput), " | Col=", ncol(datosOutput)))
+  }
+  return(datosOutput)
 }
 
-#' r.classifierMetrics
+#' r.corr
 #' @export
-r.classifierMetrics <- function (
-  clustReal = NULL, clustModel = NULL,
-  beta = 1,
-  selectedClass = NULL,
-  ...)
+r.corr <- function(df,
+                   methodCorr = "spearman")
 {
-  
-  cMetrics <- classifierMetricsConstructor$new()
-  
-  clustReal = as.vector(clustReal)
-  clustModel = as.vector(clustModel)
-  
-  if(missing(selectedClass) || is.null(selectedClass)) {
-    selectedClass = max(clustReal)
+  methodCorr = tolower(methodCorr)
+  if (!(methodCorr %in% c("pearson", "kendall", "spearman"))) {
+    methodCorr = "spearman"
   }
   
-  setRealPositive = which(clustReal==selectedClass)
-  setRealNegative = which(clustReal<selectedClass)
-  setMdlPositive = which(clustModel==selectedClass)
-  setMdlNegative = which(clustModel<selectedClass)
+  if (is.data.frame(df)) {
+    dfCleaned = r.getDF.cleaned(df,
+                                filterNA = TRUE,
+                                filterInfinite = TRUE,
+                                filterConstants = TRUE)
+    textLabels = names(dfCleaned)
+    corrMatrix = cor(dfCleaned, method=methodCorr) 
+    if (nrow(corrMatrix) == length(textLabels)) rownames(corrMatrix) = textLabels
+    if (ncol(corrMatrix) == length(textLabels)) colnames(corrMatrix) = textLabels    
+  } else {
+    textLabels = colnames(df)
+    corrMatrix = cor(df, method=methodCorr)
+    if (nrow(corrMatrix) == length(textLabels)) rownames(corrMatrix) = textLabels
+    if (ncol(corrMatrix) == length(textLabels)) colnames(corrMatrix) = textLabels      
+  }
   
-  arrayTruePos = intersect(setRealPositive, setMdlPositive)
-  arrayFalsePos = intersect(setRealNegative, setMdlPositive)
-  arrayFalseNeg = intersect(setRealPositive, setMdlNegative)
-  arrayTrueNeg = intersect(setRealNegative, setMdlNegative)
-  
-  truePos = length(arrayTruePos)
-  falsePos = length(arrayFalsePos)
-  falseNeg = length(arrayFalseNeg)
-  trueNeg = length(arrayTrueNeg)
-  
-  cMetrics$precision = truePos / (truePos + falsePos)
-  cMetrics$recall = truePos / (truePos + falseNeg)
-  cMetrics$sensitivity = cMetrics$recall
-  cMetrics$specificity = trueNeg / (trueNeg + falsePos)
-  cMetrics$accuracy = (truePos + trueNeg) / (truePos + falsePos + trueNeg + falseNeg)
-  cMetrics$F1Score = 2 * (cMetrics$precision * cMetrics$recall) / (cMetrics$precision + cMetrics$recall)
-  cMetrics$FBetaScore = (1+beta^2) * (cMetrics$precision * cMetrics$recall) / (beta^2*cMetrics$precision + cMetrics$recall)
-  
-  cMetrics$tp = truePos
-  cMetrics$fp = falsePos
-  cMetrics$fn = falseNeg
-  cMetrics$tn = trueNeg
-  
-  print(table(clustModel, clustReal))
-  
-  return(cMetrics)
+  return(corrMatrix)
 }
 
-#' r.toClusterGroups
+#' r.getAdj
 #' @export
-r.toClusterGroups <- function (cl)
-{ 
-  if (class(cl) == 'kmeans') cl = cl$cluster
-  return(cl)
-}
-
-#' r.tree.toClusters
-#' @export
-r.tree.toClusters <- function (arbre, clustReal)
+r.getAdj <- function(adj,
+                  quantileCutOff = 0.6,
+                  absolute = TRUE,
+                  normalize = TRUE,
+                  removeAutoCycles = TRUE,
+                  undirected = TRUE,
+                  useColumnNames = TRUE)
 {
-  clustReal = r.toClusterGroups(clustReal)
-  
-  taula = table(predict(arbre, type = "node"), clustReal)
-  n = dim(taula)[1]
-  m = dim(taula)[2]
-  rowMean = r.arrayzeros(n)
-  for (k in 1:n) {
-    rowMean[k] = 1
-    for (c in 2:m) {
-      if (taula[k,rowMean[k]]<=taula[k,c]) {
-        rowMean[k] =  c
-      }
-    }
+  if (is.data.frame(adj)) {
+    warning("Input is a dataframe.")
+    dfCleaned = r.getDF.cleaned(adj,
+                                filterNA = TRUE,
+                                filterInfinite = TRUE)
+    textLabels = names(dfCleaned)
+    adj = as.matrix(dfCleaned)
+    if (nrow(adj) == length(textLabels)) rownames(adj) = textLabels
+    if (ncol(adj) == length(textLabels)) colnames(adj) = textLabels    
   }
-  index = as.numeric(attributes(taula)$dimnames[[1]])
-  minNode = min(predict(arbre, type = "node"))
-  maxNode = max(predict(arbre, type = "node"))
-  hashTable = r.arrayzeros(maxNode-minNode+1)
-  hashTable[index-minNode+1] = rowMean
-  clustArbre = hashTable[predict(arbre, type = "node")-minNode+1]
-  
-  return(clustArbre)
+  if (!is.matrix(adj)) {
+    warning("Input is not a matrix.")
+  }
+  if (nrow(adj) != ncol(adj)) {
+    warning("Input matrix is not symmetric.")
+    n = min(nrow(adj), ncol(adj))
+    adj = adj[1:n,1:n]
+  }
+  if (useColumnNames) rownames(adj) = colnames(adj)
+  if (absolute) {
+    adj = abs(adj)
+  }
+  if (normalize) {
+    adj = r.normalize(adj, imin=0, imax=1)
+  }
+  if (0<quantileCutOff && quantileCutOff<1) {
+    adj[which(adj<quantile(adj, probs=quantileCutOff))] = 0
+  }
+  if (removeAutoCycles) {
+    for (i in 1:nrow(adj)) adj[i,i] = 0  
+  }
+  if (undirected) {
+    adj = (adj+t(adj))/2
+  }
+  return(adj)
 }
 
-#' r.toFormula
+#' r.getAdj.corr
 #' @export
-r.toFormula <- function (x, txtMatrix, txtY = NULL)
-{ 
-  xnam = paste(paste(txtMatrix, '[,', seo=''), 1:dim(x)[2],"]", sep="")
-  xnam = paste(xnam, collapse= "+")
-  
-  if(missing(txtY) || is.null(txtY)) {
-    fmla = xnam
-  } else {
-    fmla <- as.formula(paste(txtY, '~', xnam))
-  } 
-  return(fmla)
-}
-
-#' r.spline
-#' @export
-r.spline <- function (
-  y,
-  x = NULL,
-  scale = 1,
-  resolution = 100,
-  center = F,
-  norm = F)
+r.getAdj.corr <- function(df,
+                          methodCorr = "spearman",
+                          quantileCutOff = 0.6,
+                          absolute = TRUE,
+                          normalize = TRUE,
+                          removeAutoCycles = TRUE,
+                          undirected = TRUE,
+                          useColumnNames = TRUE)
 {
-  y = r.toColumns(y)
-  y = y[,1]
-  n <- length(y)
+  corrMatrix = r.corr(df, methodCorr)
   
-  if(missing(x)) {
-    x = 1:n
-  } else {
-    x = r.toColumns(x)
-    x = x[,1]   
-  }
-  
-  spl =spline(scale*x, y, n=resolution)
-  spl = spl$y
-  if (center) {
-    spl = spl-mean(spl)
-  }
-  if (norm) {
-    spl = spl/max(abs(spl))
-  }
-  
-  return (spl)
-}
+  adj = r.getAdj(corrMatrix, 
+                 quantileCutOff=quantileCutOff, 
+                 absolute=absolute, 
+                 normalize=normalize, 
+                 removeAutoCycles=removeAutoCycles, 
+                 undirected=undirected,
+                 useColumnNames=useColumnNames)
 
-#' r.rescale.col
-#' @export
-r.rescale.col <- function (x)
-{
-  if (class(x)=='data.frame') {
-    xres = data.matrix(x)
-  } else {
-    xres = x
-  }
-  
-  if (class(x)!='matrix') {
-    xres = xres-min(xres)
-    m = max(xres)
-    if (m>0) {
-      xres = xres/m
-    }
-  } else {
-    for (i in 1:dim(xres)[2]) {
-      xres[,i] = xres[,i]-min(xres[,i])
-      m = max(xres[,i])
-      if (m>0) {
-        xres[,i] = xres[,i]/m
-      }
-    }   
-  }
-  
-  return(xres)
-}
-
-#' r.randomData
-#' @export
-r.randomData <- function () {
-  x = rbind(matrix(rnorm(100, sd = 0.3), ncol = 2),             
-            matrix(rnorm(100, mean = 1, sd = 0.3), ncol = 2)) 
-  return (x)
-}
-
-#' r.zeros
-#' @export
-r.zeros <- function (nrow = 1, ncol = 1)
-{ 
-  return (matrix(data=0, nrow=nrow, ncol=ncol))
-}
-
-#' r.arrayzeros
-#' @export
-r.arrayzeros <- function (nrow = 1)
-{ 
-  m = (matrix(data=0, nrow=nrow, ncol=1))
-  return(m[,1])
-}
-
-#' r.toColumns
-#' @export
-r.toColumns <- function (
-  y,
-  autoT = T, trans = F)
-{ 
-  if (class(y)=='data.frame') {
-    y = data.matrix(y)
-  } else {
-    if(class(y) != 'matrix') {
-      y = cbind(y) # y[,1] array
-    }
-  }
-  if ((dim(y)[1]==1 && autoT) || (trans)) {
-    y = t(y)
-  }
-  return(y)
+  return(adj)
 }
