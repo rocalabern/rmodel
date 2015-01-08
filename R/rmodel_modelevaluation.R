@@ -17,10 +17,10 @@ r.R2Adjusted <- function (y, x, p, n) {
   return(R2Adjusted)
 }
 
-#' r.gain
+#' r.gain.old
 #' @param mode 1 Optimista, -1 Pesimista, 0 Sense Modificar, 2 Promig, 3 Random
 #' @export
-r.gain <- function(score,fuga, perc=0.2, mode = 0) {
+r.gain.old <- function(score,fuga, perc=0.2, mode = 0) {
   pos = round(perc*length(fuga))
   if (mode==2) {
     ind = sort(fuga, decreasing=TRUE, index.return=TRUE)
@@ -50,6 +50,118 @@ r.gain <- function(score,fuga, perc=0.2, mode = 0) {
     }
     indSorted = sort(score, decreasing=TRUE, index.return=TRUE)
     return (sum(fuga[indSorted$ix[1:pos]])/sum(fuga)) 
+  }
+}
+
+#' r.gain
+#' @param mode 
+#' \cr "def" = As it is
+#' \cr "rnd" = Random
+#' \cr "pos" = Optimist/Positive (Maximum)
+#' \cr "neg" = Pessimist/Negative (Minimum)
+#' \cr "avg" = Average of Optimist and Pessimist
+#' @export
+r.gain <- function(score, target, perc=0.2, mode="def") {
+  pos = round(perc*length(target))
+  if (mode=="rnd") {
+    # Random
+    ind <- sample(1:length(target))
+    target <- target[ind]
+    score <- score[ind]
+    
+    targetOrd <- target[order(-score)]
+    cummmSums <- cumsum(targetOrd)
+    return (cummmSums[pos]/tail(cummmSums,1))
+  } else if (mode=="pos") {
+    # Optimist/Positive (Maximum)
+    targetOrd <- target[order(-score, -target)]
+    cummmSums <- cumsum(targetOrd)
+    return (cummmSums[pos]/tail(cummmSums,1))
+  } else if (mode=="neg") {
+    # Pessimist/Negative (Minimum)
+    targetOrd <- target[order(-score, target)]
+    cummmSums <- cumsum(targetOrd)
+    return (cummmSums[pos]/tail(cummmSums,1))
+  } else if (mode=="avg") {
+    # Average of Optimist and Pessimist
+    targetOrd <- target[order(-score, -target)]
+    cummmSums <- cumsum(targetOrd)
+    percPos = cummmSums[pos]/tail(cummmSums,1)
+    targetOrd <- target[order(-score, target)]
+    cummmSums <- cumsum(targetOrd)
+    percNeg = cummmSums[pos]/tail(cummmSums,1)    
+    return (0.5*percPos + 0.5*percNeg) 
+  } else {
+    # As it is ("def")
+    targetOrd <- target[order(-score)]
+    cummmSums <- cumsum(targetOrd)
+    return (cummmSums[pos]/tail(cummmSums,1))
+  }
+}
+
+#' r.gains
+#' @param mode 
+#' \cr "def" = As it is
+#' \cr "rnd" = Random
+#' \cr "pos" = Optimist/Positive (Maximum)
+#' \cr "neg" = Pessimist/Negative (Minimum)
+#' \cr "avg" = Average of Optimist and Pessimist
+#' @export
+r.gains <- function(score, target, npoints=20, mode="def") {
+  if (mode=="rnd") {
+    # Random
+    ind <- sample(1:length(target))
+    target <- target[ind]
+    score <- score[ind]
+    
+    targetOrd <- target[order(-score)]
+    cummmSums <- cumsum(targetOrd)[round(seq(1,length(targetOrd),length.out=npoints+1))]
+    cummmSums[1] <- 0
+    return (data.frame(
+      perc = seq(0,1,1/npoints), 
+      gain = cummmSums/tail(cummmSums,1)
+      ))
+  } else if (mode=="pos") {
+    # Optimist/Positive (Maximum)
+    targetOrd <- target[order(-score, -target)]
+    cummmSums <- cumsum(targetOrd)[round(seq(1,length(targetOrd),length.out=npoints+1))]
+    cummmSums[1] <- 0
+    return (data.frame(
+      perc = seq(0,1,1/npoints), 
+      gain = cummmSums/tail(cummmSums,1)
+    ))
+  } else if (mode=="neg") {
+    # Pessimist/Negative (Minimum)
+    targetOrd <- target[order(-score, target)]
+    cummmSums <- cumsum(targetOrd)[round(seq(1,length(targetOrd),length.out=npoints+1))]
+    cummmSums[1] <- 0
+    return (data.frame(
+      perc = seq(0,1,1/npoints), 
+      gain = cummmSums/tail(cummmSums,1)
+    ))
+  } else if (mode=="avg") {
+    # Average of Optimist and Pessimist
+    targetOrd <- target[order(-score, -target)]
+    cummmSums <- cumsum(targetOrd)[round(seq(1,length(targetOrd),length.out=npoints+1))]
+    cummmSums[1] <- 0
+    percPos <- cummmSums/tail(cummmSums,1)
+    targetOrd <- target[order(-score, target)]
+    cummmSums <- cumsum(targetOrd)[round(seq(1,length(targetOrd),length.out=npoints+1))]
+    cummmSums[1] <- 0
+    percNeg <- cummmSums/tail(cummmSums,1)    
+    return (data.frame(
+      perc = seq(0,1,1/npoints), 
+      gain = 0.5*percPos + 0.5*percNeg
+    ))
+  } else {
+    # As it is ("def")
+    targetOrd <- target[order(-score)]
+    cummmSums <- cumsum(targetOrd)[round(seq(1,length(targetOrd),length.out=npoints+1))]
+    cummmSums[1] <- 0
+    return (data.frame(
+      perc = seq(0,1,1/npoints), 
+      gain = cummmSums/tail(cummmSums,1)
+    ))
   }
 }
 
