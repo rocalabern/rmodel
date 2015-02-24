@@ -4,12 +4,6 @@
 \alias{r.gain}
 \title{r.gain}
 \usage{
-<<<<<<< HEAD
-r.gain(score, fuga, perc = 0.2, mode = 0)
-}
-\arguments{
-\item{mode}{1 Optimista, -1 Pesimista, 0 Sense Modificar, 2 Promig, 3 Random}
-=======
 r.gain(score, target, perc = 0.2, mode = "def")
 }
 \arguments{
@@ -18,7 +12,6 @@ r.gain(score, target, perc = 0.2, mode = "def")
 \cr "pos" = Optimist/Positive (Maximum)
 \cr "neg" = Pessimist/Negative (Minimum)
 \cr "avg" = Average of Optimist and Pessimist}
->>>>>>> bccacaaf47a126a027c3295a85e41c7e8c40322f
 }
 \description{
 r.gain
