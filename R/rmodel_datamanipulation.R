@@ -275,7 +275,7 @@ r.segment.dataframe <- function(dades, segmentacion,
         dfOutput[iGroup, 1+length(segmentacion)+4] = length(which(dades[ind, target]==targetValue))/length(ind)
       dfOutput[iGroup, 1+length(segmentacion)+5] = length(which(dades[ind, target]==targetValue))/nrow(dades)
       
-      if (length(ind)==0) 
+      if (length(ind)==0 || !is.numeric(dades[, target])) 
         dfOutput[iGroup, 1+length(segmentacion)+6] = 0
       else if (is.numeric(dades[ind, target])) 
         dfOutput[iGroup, 1+length(segmentacion)+6] = r.mean(dades[ind, target])
