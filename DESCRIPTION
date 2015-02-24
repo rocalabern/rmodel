@@ -11,5 +11,6 @@ Collate:
     'rmodel_dataanalysis.R'
     'rmodel_datamanipulation.R'
     'rmodel_modelevaluation.R'
+    'rmodel_function.R'
     'rmodel_tools.R'
     'rmodel.R'

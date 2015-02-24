@@ -1,11 +1,10 @@
-#' r.tree.toClusters
+#' r.abslog
 #' @export
-abslog<-function(x) {  
-  if(is.na(x))return(0)
+r.abslog <- function(x) {  
+  if (is.na(x)) return(0)
   else
-    if (x>1)return(log10(x))
+    if (x>1) return(log10(x))
   else
-    if(x< (-1)) return( -log10(-x))
+    if (x< (-1)) return( -log10(-x))
   else return(0)
 }
-abslog=Vectorize(abslog)
