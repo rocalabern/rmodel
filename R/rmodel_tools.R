@@ -72,18 +72,17 @@ r.missings <- function (var) {
 
 #' r.normalize
 #' @export
-r.normalize <- function (x, ind=NULL, imin=0, imax=0)
+r.normalize <- function (x, ind=NULL, imin=0, imax=1)
 {
   if (!is.null(ind)) {
     x = x[ind]
   }
-  xmin = min(x)
-  xmax = max(x)
+  extrems = range(x)
   
-  if (xmax==xmin) {
+  if (extrems[2]==extrems[1]) {
     return (rep(imin, length(ind)))
   } else {
-    return (imin+(imax-imin)*((x-xmin)/(xmax-xmin)))
+    return (imin+(imax-imin)*((x-extrems[1])/(extrems[2]-extrems[1])))
   }
 }
 
