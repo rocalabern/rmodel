@@ -240,7 +240,7 @@ r.performance.metrics <- function(
   }
   if(printF1) {
     strDFF1 = formatPrintNumber(dfF1,round=round,big.mark=big.mark,decimal.mark=decimal.mark,scientific=scientific)
-    if(printConfMat && printF1) cat("\n")
+    if(printConfMat) cat("\n")
     print(strDFF1)
   }
   if (printMetrics) {
@@ -262,6 +262,7 @@ r.performance.metrics <- function(
     strMetrics[6,1] = formatPrintDec(metrics$ScoreG,round=round,big.mark=big.mark,decimal.mark=decimal.mark,scientific=scientific)
     strMetrics[7,1] = formatPrintDec(metrics$ScoreBeta,round=round,big.mark=big.mark,decimal.mark=decimal.mark,scientific=scientific)
     strMetrics[8,1] = formatPrintDec(metrics$ScorePhi,round=round,big.mark=big.mark,decimal.mark=decimal.mark,scientific=scientific)
+    if(printConfMat || printF1) cat("\n")
     print(strMetrics)
   }
   invisible(list(dfConfMat=dfConfMat, dfF1=dfF1, metrics = metrics))
