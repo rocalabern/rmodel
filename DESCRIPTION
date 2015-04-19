@@ -6,7 +6,13 @@ Date: 2013-11-16
 Author: Roc Alabern
 Maintainer: Roc Alabern <roc.alabern@gmail.com>
 Description: Tools for models
-License: GPLv2
+License: GPL (>= 3)
+Imports:
+    data.table,
+    reshape2,
+    zoo,
+    ROCR,
+    nloptr
 Collate:
     'functions.R'
     'rmodel_tools.R'

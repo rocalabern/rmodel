@@ -4,9 +4,9 @@
 \alias{r.performance.metrics}
 \title{r.performance.metrics}
 \usage{
-r.performance.metrics(score, target, threshold = 0.5, round = 5,
+r.performance.metrics(score, target, threshold = 0.5, beta = 1, round = 5,
   big.mark = ".", decimal.mark = ",", scientific = FALSE,
-  printConfMat = TRUE, printF1 = TRUE)
+  printConfMat = TRUE, printF1 = TRUE, printMetrics = TRUE)
 }
 \description{
 r.performance.metrics

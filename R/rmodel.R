@@ -1,5 +1,12 @@
 setRefClass("ClassifierMetricsClass",
-            fields = c("precision", "recall", "sensitivity", "specificity", "accuracy", "F1Score", "FBetaScore", "tp", "fp", "fn", "tn"))
+            fields = c("tp", "fp", "fn", "tn",
+                       "accuracy", 
+                       "precision", "recall", 
+                       "sensitivity", "specificity", 
+                       "ScoreF1",
+                       "ScoreG",
+                       "ScoreBeta",
+                       "ScorePhi"))
 
 classifierMetricsConstructor <- getRefClass("ClassifierMetricsClass")
 

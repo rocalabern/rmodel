@@ -1,4 +1,27 @@
-formatNumberForPrint <- function (
+formatPrintInt <- function (
+  x, 
+  big.mark=".", 
+  decimal.mark = ",",
+  scientific = FALSE
+) {
+  return (
+    format(as.integer(round(x)), big.mark=big.mark, decimal.mark=decimal.mark, scientific=scientific)
+  )
+}
+
+formatPrintDec <- function (
+  x, 
+  round=4, 
+  big.mark=".", 
+  decimal.mark = ",",
+  scientific = FALSE
+) {
+  return (
+    format(round(x,round), big.mark=big.mark, decimal.mark=decimal.mark, scientific=scientific)
+  )
+}
+
+formatPrintNumber <- function (
   x, 
   round=4, 
   big.mark=".", 
@@ -17,101 +40,6 @@ formatNumberForPrint <- function (
 r.auc <- function(x,y) {
   id <- order(x)
   return (sum(diff(x[id])*zoo::rollmean(y[id],2)))
-}
-
-#' @title r.optimize.threshold
-#' @export
-r.optimize.threshold <- function (
-  score,
-  target,
-  f_obj = function(threshold) {
-    predict = numeric(length(score))
-    predict[score>threshold] = 1
-    t <- table(predict, target)
-    if (nrow(t)==1)
-      f1 = 0
-    else
-      f1 = 0.5*(2*t[1,1]/(2*t[1,1]+t[1,2]+t[2,1]))+0.5*(2*t[2,2]/(2*t[2,2]+t[1,2]+t[2,1]))
-    return (-f1)
-  },
-  x0 = quantile(score, probs=0.5),
-  xtol_rel = 1e-8,
-  maxtime = 60,
-  algorithm = "NLOPT_LN_COBYLA"
-) {
-  if (length(score)!=length(target)) stop("Arrays score and target with different length.")
-  opt <- nloptr::nloptr(
-    x0,
-    f_obj,
-    lb = 0,
-    ub = 1,
-    opts = list(
-      "algorithm"=algorithm,
-      "xtol_rel"=xtol_rel,
-      "maxtime"=maxtime)
-  )
-  message(paste0("seed threshold = ", opt$x0))
-  message(paste0("threshold = ", opt$solution))
-  if (missing(f_obj)) {
-    message(paste0("init F1 = ", -f_obj(x0)))
-    message(paste0("opt  F1 = ", -f_obj(opt$solution)))
-  } else {
-    message(paste0("init metric = ", f_obj(x0)))
-    message(paste0("opt  metric = ", f_obj(opt$solution)))
-  }
-  return (opt)
-}
-
-#' @title r.performance.metrics
-#' @export
-r.performance.metrics <- function(
-  score,
-  target,
-  threshold = 0.5,
-  round = 5,
-  big.mark=".", 
-  decimal.mark = ",",
-  scientific = FALSE,
-  printConfMat = TRUE,
-  printF1 = TRUE
-) {
-  predict = ifelse(score>threshold, 1, 0)
-  t = table(predict, target)
-  
-  dfConfMat = data.frame(ACTUAL_0=numeric(4), ACTUAL_1=numeric(4), PREDICTED=numeric(4), PRECISION=numeric(4))
-  rownames(dfConfMat) = c("PREDICTED_0", "PREDICTED_1", "ACTUAL", "RECALL")
-  dfConfMat[1:2,1:2] = t
-  dfConfMat[1,3] = dfConfMat[1,1] + dfConfMat[1,2]
-  dfConfMat[2,3] = dfConfMat[2,1] + dfConfMat[2,2]
-  dfConfMat[3,1] = dfConfMat[1,1] + dfConfMat[2,1]
-  dfConfMat[3,2] = dfConfMat[1,2] + dfConfMat[2,2]
-  dfConfMat[3,3] = sum(t)
-  dfConfMat[1,4] = (dfConfMat[1,1] / dfConfMat[1,3])
-  dfConfMat[2,4] = (dfConfMat[2,2] / dfConfMat[2,3])
-  dfConfMat[4,1] = (dfConfMat[1,1] / dfConfMat[3,1])
-  dfConfMat[4,2] = (dfConfMat[2,2] / dfConfMat[3,2])
-  dfConfMat[3,4] = (dfConfMat[1,4] + dfConfMat[2,4]) / 2
-  dfConfMat[4,3] = (dfConfMat[4,1] + dfConfMat[4,2]) / 2
-  dfConfMat[4,4] = ((dfConfMat[1,1] + dfConfMat[2,2]) / dfConfMat[3,3])
-  
-  dfF1 = data.frame(F=numeric(3), phi=numeric(3))
-  dfF1[1,1] = 2*dfConfMat[1,4]*dfConfMat[4,1]/(dfConfMat[1,4]+dfConfMat[4,1])
-  dfF1[2,1] = 2*dfConfMat[2,4]*dfConfMat[4,2]/(dfConfMat[2,4]+dfConfMat[4,2])
-  dfF1[3,1] = (dfF1[1,1] + dfF1[2,1])/2
-  dfF1[1,2] = ((dfConfMat[1,1]*dfConfMat[2,2])-(dfConfMat[1,2]*dfConfMat[2,1]))/sqrt((dfConfMat[1,1]+dfConfMat[1,2])*(dfConfMat[1,1]+dfConfMat[2,1])*(dfConfMat[2,2]+dfConfMat[1,2])*(dfConfMat[2,2]+dfConfMat[2,1]))
-  dfF1[2,2] = dfF1[1,2]
-  dfF1[3,2] = (dfF1[1,2] + dfF1[2,2])/2
-  
-  if(printConfMat) {
-    strDFConfMat = formatNumberForPrint(dfConfMat,round=round,big.mark=big.mark,decimal.mark=decimal.mark,scientific=scientific)
-    print(strDFConfMat)
-  }
-  if(printF1) {
-    strDFF1 = formatNumberForPrint(dfF1,round=round,big.mark=big.mark,decimal.mark=decimal.mark,scientific=scientific)
-    if(printConfMat && printF1) cat("\n")
-    print(strDFF1)
-  }
-  invisible(list(dfConfMat=dfConfMat, dfF1=dfF1))
 }
 
 #' r.R2
@@ -245,53 +173,139 @@ r.gains <- function(score, target, npoints=20, mode="def") {
   }
 }
 
-#' r.classifierMetrics
+#' @title r.performance.metrics
 #' @export
-r.classifierMetrics <- function (
-  clustReal = NULL, clustModel = NULL,
+r.performance.metrics <- function(
+  score,
+  target,
+  threshold = 0.5,
   beta = 1,
-  selectedClass = NULL,
-  ...)
-{
+  round = 5,
+  big.mark=".", 
+  decimal.mark = ",",
+  scientific = FALSE,
+  printConfMat = TRUE,
+  printF1 = TRUE,
+  printMetrics = TRUE
+) {
+  predict = ifelse(score>threshold, 1, 0)
+  t = table(predict, target)
   
-  cMetrics <- classifierMetricsConstructor$new()
+  dfConfMat = data.frame(ACTUAL_0=numeric(4), ACTUAL_1=numeric(4), PREDICTED=numeric(4), PRECISION=numeric(4))
+  rownames(dfConfMat) = c("PREDICTED_0", "PREDICTED_1", "ACTUAL", "RECALL")
+  dfConfMat[1:2,1:2] = t
+  dfConfMat[1,3] = dfConfMat[1,1] + dfConfMat[1,2]
+  dfConfMat[2,3] = dfConfMat[2,1] + dfConfMat[2,2]
+  dfConfMat[3,1] = dfConfMat[1,1] + dfConfMat[2,1]
+  dfConfMat[3,2] = dfConfMat[1,2] + dfConfMat[2,2]
+  dfConfMat[3,3] = sum(t)
+  dfConfMat[1,4] = (dfConfMat[1,1] / dfConfMat[1,3])
+  dfConfMat[2,4] = (dfConfMat[2,2] / dfConfMat[2,3])
+  dfConfMat[4,1] = (dfConfMat[1,1] / dfConfMat[3,1])
+  dfConfMat[4,2] = (dfConfMat[2,2] / dfConfMat[3,2])
+  dfConfMat[3,4] = (dfConfMat[1,4] + dfConfMat[2,4]) / 2
+  dfConfMat[4,3] = (dfConfMat[4,1] + dfConfMat[4,2]) / 2
+  dfConfMat[4,4] = ((dfConfMat[1,1] + dfConfMat[2,2]) / dfConfMat[3,3])
   
-  clustReal = as.vector(clustReal)
-  clustModel = as.vector(clustModel)
+  dfF1 = data.frame(F1=numeric(3), phi=numeric(3))
+  dfF1[1,1] = 2*dfConfMat[1,4]*dfConfMat[4,1]/(dfConfMat[1,4]+dfConfMat[4,1])
+  dfF1[2,1] = 2*dfConfMat[2,4]*dfConfMat[4,2]/(dfConfMat[2,4]+dfConfMat[4,2])
+  dfF1[3,1] = (dfF1[1,1] + dfF1[2,1])/2
+  dfF1[1,2] = ((dfConfMat[1,1]*dfConfMat[2,2])-(dfConfMat[1,2]*dfConfMat[2,1]))/sqrt((dfConfMat[1,1]+dfConfMat[1,2])*(dfConfMat[1,1]+dfConfMat[2,1])*(dfConfMat[2,2]+dfConfMat[1,2])*(dfConfMat[2,2]+dfConfMat[2,1]))
+  dfF1[2,2] = dfF1[1,2]
+  dfF1[3,2] = (dfF1[1,2] + dfF1[2,2])/2
   
-  if(missing(selectedClass) || is.null(selectedClass)) {
-    selectedClass = max(clustReal)
+  metrics <- classifierMetricsConstructor$new()
+  tp = dfConfMat[2,2]
+  fp = dfConfMat[2,1]
+  fn = dfConfMat[1,2]
+  tn = dfConfMat[1,1]
+  metrics$tp = tp
+  metrics$fp = fp
+  metrics$fn = fn
+  metrics$tn = tn
+  metrics$accuracy = (tp + tn) / (tp + fp + tn + fn)
+  metrics$precision = tp / (tp + fp)
+  metrics$recall = tp / (tp + fn)
+  metrics$sensitivity = metrics$recall
+  metrics$specificity = tn / (tn + fp)
+  metrics$ScoreF1 = 2 * (metrics$precision * metrics$recall) / (metrics$precision + metrics$recall)
+  metrics$ScoreG = sqrt(metrics$precision*metrics$recall)
+  metrics$ScoreBeta = (1+beta^2) * (metrics$precision * metrics$recall) / (beta^2*metrics$precision + metrics$recall)
+  metrics$ScorePhi = (tp*tn - fp*fn) / sqrt((tp+fp)*(tp+fn)*(tn+fp)*(tn+fn))
+  
+  if(printConfMat) {
+    strDFConfMat = formatPrintNumber(dfConfMat,round=round,big.mark=big.mark,decimal.mark=decimal.mark,scientific=scientific)
+    print(strDFConfMat)
   }
-  
-  setRealPositive = which(clustReal==selectedClass)
-  setRealNegative = which(clustReal<selectedClass)
-  setMdlPositive = which(clustModel==selectedClass)
-  setMdlNegative = which(clustModel<selectedClass)
-  
-  arrayTruePos = intersect(setRealPositive, setMdlPositive)
-  arrayFalsePos = intersect(setRealNegative, setMdlPositive)
-  arrayFalseNeg = intersect(setRealPositive, setMdlNegative)
-  arrayTrueNeg = intersect(setRealNegative, setMdlNegative)
-  
-  truePos = length(arrayTruePos)
-  falsePos = length(arrayFalsePos)
-  falseNeg = length(arrayFalseNeg)
-  trueNeg = length(arrayTrueNeg)
-  
-  cMetrics$precision = truePos / (truePos + falsePos)
-  cMetrics$recall = truePos / (truePos + falseNeg)
-  cMetrics$sensitivity = cMetrics$recall
-  cMetrics$specificity = trueNeg / (trueNeg + falsePos)
-  cMetrics$accuracy = (truePos + trueNeg) / (truePos + falsePos + trueNeg + falseNeg)
-  cMetrics$F1Score = 2 * (cMetrics$precision * cMetrics$recall) / (cMetrics$precision + cMetrics$recall)
-  cMetrics$FBetaScore = (1+beta^2) * (cMetrics$precision * cMetrics$recall) / (beta^2*cMetrics$precision + cMetrics$recall)
-  
-  cMetrics$tp = truePos
-  cMetrics$fp = falsePos
-  cMetrics$fn = falseNeg
-  cMetrics$tn = trueNeg
-  
-  print(table(clustModel, clustReal))
-  
-  return(cMetrics)
+  if(printF1) {
+    strDFF1 = formatPrintNumber(dfF1,round=round,big.mark=big.mark,decimal.mark=decimal.mark,scientific=scientific)
+    if(printConfMat && printF1) cat("\n")
+    print(strDFF1)
+  }
+  if (printMetrics) {
+    strMetrics = data.frame(score=character(8), stringsAsFactors=FALSE)
+    rownames(strMetrics) = c(
+      "Accuracy",
+      "Precision",
+      "Recall (sensitivity)",
+      "specificity",
+      "Score F1",
+      "Score G",
+      "Score Beta",
+      "Score Phi (MCC)")
+    strMetrics[1,1] = formatPrintDec(metrics$accuracy,round=round,big.mark=big.mark,decimal.mark=decimal.mark,scientific=scientific)
+    strMetrics[2,1] = formatPrintDec(metrics$precision,round=round,big.mark=big.mark,decimal.mark=decimal.mark,scientific=scientific)
+    strMetrics[3,1] = formatPrintDec(metrics$recall,round=round,big.mark=big.mark,decimal.mark=decimal.mark,scientific=scientific)
+    strMetrics[4,1] = formatPrintDec(metrics$specificity,round=round,big.mark=big.mark,decimal.mark=decimal.mark,scientific=scientific)
+    strMetrics[5,1] = formatPrintDec(metrics$ScoreF1,round=round,big.mark=big.mark,decimal.mark=decimal.mark,scientific=scientific)
+    strMetrics[6,1] = formatPrintDec(metrics$ScoreG,round=round,big.mark=big.mark,decimal.mark=decimal.mark,scientific=scientific)
+    strMetrics[7,1] = formatPrintDec(metrics$ScoreBeta,round=round,big.mark=big.mark,decimal.mark=decimal.mark,scientific=scientific)
+    strMetrics[8,1] = formatPrintDec(metrics$ScorePhi,round=round,big.mark=big.mark,decimal.mark=decimal.mark,scientific=scientific)
+    print(strMetrics)
+  }
+  invisible(list(dfConfMat=dfConfMat, dfF1=dfF1, metrics = metrics))
+}
+
+#' @title r.optimize.threshold
+#' @export
+r.optimize.threshold <- function (
+  score,
+  target,
+  f_obj = function(threshold) {
+    predict = numeric(length(score))
+    predict[score>threshold] = 1
+    t <- table(predict, target)
+    if (nrow(t)==1)
+      f1 = 0
+    else
+      f1 = 0.5*(2*t[1,1]/(2*t[1,1]+t[1,2]+t[2,1]))+0.5*(2*t[2,2]/(2*t[2,2]+t[1,2]+t[2,1]))
+    return (-f1)
+  },
+  x0 = quantile(score, probs=0.5),
+  xtol_rel = 1e-8,
+  maxtime = 60,
+  algorithm = "NLOPT_LN_COBYLA"
+) {
+  if (length(score)!=length(target)) stop("Arrays score and target with different length.")
+  opt <- nloptr::nloptr(
+    x0,
+    f_obj,
+    lb = 0,
+    ub = 1,
+    opts = list(
+      "algorithm"=algorithm,
+      "xtol_rel"=xtol_rel,
+      "maxtime"=maxtime)
+  )
+  message(paste0("seed threshold = ", opt$x0))
+  message(paste0("threshold = ", opt$solution))
+  if (missing(f_obj)) {
+    message(paste0("init F1 = ", -f_obj(x0)))
+    message(paste0("opt  F1 = ", -f_obj(opt$solution)))
+  } else {
+    message(paste0("init metric = ", f_obj(x0)))
+    message(paste0("opt  metric = ", f_obj(opt$solution)))
+  }
+  return (opt)
 }
