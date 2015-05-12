@@ -1,11 +1,11 @@
 Package: rmodel
 Type: Package
-Title: Tools for models
+Title: Tools for data analysis
 Version: 1.0.1
 Date: 2015-05-11 (2013-11-16)
 Author: Roc Alabern
 Maintainer: Roc Alabern <roc.alabern@gmail.com>
-Description: Tools for models
+Description: Tools for data analysis
 License: GPL (>= 3)
 Imports:
     data.table,
