@@ -1,8 +1,8 @@
 Package: rmodel
 Type: Package
 Title: Tools for models
-Version: 1.0
-Date: 2013-11-16
+Version: 1.0.1
+Date: 2015-05-11 (2013-11-16)
 Author: Roc Alabern
 Maintainer: Roc Alabern <roc.alabern@gmail.com>
 Description: Tools for models
@@ -13,11 +13,3 @@ Imports:
     zoo,
     ROCR,
     nloptr
-Collate:
-    'functions.R'
-    'rmodel_tools.R'
-    'rmodel.R'
-    'rmodel_dataanalysis.R'
-    'rmodel_datamanipulation.R'
-    'rmodel_modelevaluation.R'
-    'deprecated.R'

@@ -1,45 +1,24 @@
-formatPrintInt <- function (
-  x, 
-  big.mark=".", 
-  decimal.mark = ",",
-  scientific = FALSE
-) {
-  return (
-    format(as.integer(round(x)), big.mark=big.mark, decimal.mark=decimal.mark, scientific=scientific)
-  )
-}
-
-formatPrintDec <- function (
-  x, 
-  round=4, 
-  big.mark=".", 
-  decimal.mark = ",",
-  scientific = FALSE
-) {
-  return (
-    format(round(x,round), big.mark=big.mark, decimal.mark=decimal.mark, scientific=scientific)
-  )
-}
-
-formatPrintNumber <- function (
-  x, 
-  round=4, 
-  big.mark=".", 
-  decimal.mark = ",",
-  scientific = FALSE
-) {
-  x = as.matrix(x)
-  return (as.data.frame(ifelse(abs(x-as.integer(x))>0,
-                               format(round(x,round), big.mark=big.mark, decimal.mark=decimal.mark, scientific=scientific),
-                               format(as.integer(x), big.mark=big.mark, decimal.mark=decimal.mark, scientific=scientific)
-  )))
-}
-
 #' @title r.auc
 #' @export
 r.auc <- function(x,y) {
   id <- order(x)
   return (sum(diff(x[id])*zoo::rollmean(y[id],2)))
+}
+
+#' @title r.auc.roc
+#' @export
+r.auc.roc <- function(score, target) {
+  pred <- ROCR::prediction(score, target)
+  AUC = ROCR::performance(pred, "auc")@y.values[[1]]
+  return (AUC)
+}
+
+#' @title r.auc.gain
+#' @export
+r.auc.gain <- function(score, target, npoints = 100, mode = "avg") {
+  data = r.gains(score, target, npoints = npoints, mode = mode)
+  AUC = r.auc(data$perc, data$gain)
+  return (AUC)
 }
 
 #' r.R2
@@ -234,38 +213,14 @@ r.performance.metrics <- function(
   metrics$ScoreBeta = (1+beta^2) * (metrics$precision * metrics$recall) / (beta^2*metrics$precision + metrics$recall)
   metrics$ScorePhi = (tp*tn - fp*fn) / sqrt((tp+fp)*(tp+fn)*(tn+fp)*(tn+fn))
   
-  if(printConfMat) {
-    strDFConfMat = formatPrintNumber(dfConfMat,round=round,big.mark=big.mark,decimal.mark=decimal.mark,scientific=scientific)
-    print(strDFConfMat)
-  }
-  if(printF1) {
-    strDFF1 = formatPrintNumber(dfF1,round=round,big.mark=big.mark,decimal.mark=decimal.mark,scientific=scientific)
-    if(printConfMat) cat("\n")
-    print(strDFF1)
-  }
-  if (printMetrics) {
-    strMetrics = data.frame(score=character(8), stringsAsFactors=FALSE)
-    rownames(strMetrics) = c(
-      "Accuracy",
-      "Precision",
-      "Recall (sensitivity)",
-      "specificity",
-      "Score F1",
-      "Score G",
-      "Score Beta",
-      "Score Phi (MCC)")
-    strMetrics[1,1] = formatPrintDec(metrics$accuracy,round=round,big.mark=big.mark,decimal.mark=decimal.mark,scientific=scientific)
-    strMetrics[2,1] = formatPrintDec(metrics$precision,round=round,big.mark=big.mark,decimal.mark=decimal.mark,scientific=scientific)
-    strMetrics[3,1] = formatPrintDec(metrics$recall,round=round,big.mark=big.mark,decimal.mark=decimal.mark,scientific=scientific)
-    strMetrics[4,1] = formatPrintDec(metrics$specificity,round=round,big.mark=big.mark,decimal.mark=decimal.mark,scientific=scientific)
-    strMetrics[5,1] = formatPrintDec(metrics$ScoreF1,round=round,big.mark=big.mark,decimal.mark=decimal.mark,scientific=scientific)
-    strMetrics[6,1] = formatPrintDec(metrics$ScoreG,round=round,big.mark=big.mark,decimal.mark=decimal.mark,scientific=scientific)
-    strMetrics[7,1] = formatPrintDec(metrics$ScoreBeta,round=round,big.mark=big.mark,decimal.mark=decimal.mark,scientific=scientific)
-    strMetrics[8,1] = formatPrintDec(metrics$ScorePhi,round=round,big.mark=big.mark,decimal.mark=decimal.mark,scientific=scientific)
-    if(printConfMat || printF1) cat("\n")
-    print(strMetrics)
-  }
-  invisible(list(dfConfMat=dfConfMat, dfF1=dfF1, metrics = metrics))
+  performanceMetrics = list(dfConfMat=dfConfMat, dfF1=dfF1, metrics = metrics)
+  
+  printPerformance(
+    performanceMetrics,
+    printConfMat = printConfMat, printF1 = printF1, printMetrics = printMetrics,
+    round = round, big.mark = big.mark, decimal.mark = decimal.mark, scientific = scientific)
+  
+  invisible(performanceMetrics)
 }
 
 #' @title r.optimize.threshold
