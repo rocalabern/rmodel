@@ -1,7 +1,7 @@
 Package: rmodel
 Type: Package
 Title: Tools for data analysis
-Version: 1.0.1
+Version: 1.0.5
 Date: 2015-05-11 (2013-11-16)
 Author: Roc Alabern
 Maintainer: Roc Alabern <roc.alabern@gmail.com>
