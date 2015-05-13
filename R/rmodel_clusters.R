@@ -15,6 +15,7 @@ r.clusters.rearrage <- function (real, model) {
       }
     }
   }
+  return (model)
 }
 
 #' @title r.clusters.kmeans
