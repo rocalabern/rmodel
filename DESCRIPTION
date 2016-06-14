@@ -13,3 +13,4 @@ Imports:
     zoo,
     ROCR,
     nloptr
+RoxygenNote: 5.0.1
