@@ -22,7 +22,7 @@ r.metric.auc.roc <- function(score, target) {
 
 #' @title r.metric.auc.gain
 #' @export
-r.metric.gain.auc <- function(score, target, npoints = 100, mode = "avg") {
+r.metric.auc.gain <- function(score, target, npoints = 100, mode = "avg") {
   data = r.gains(score, target, npoints = npoints, mode = mode)
   AUC = r.auc(data$perc, data$gain)
   return (AUC)
