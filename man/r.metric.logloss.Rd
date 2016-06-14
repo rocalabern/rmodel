@@ -4,6 +4,6 @@
 \alias{r.metric.logloss}
 \title{r.metric.logloss}
 \usage{
-r.metric.logloss(score, target, tol = 10^-30)
+r.metric.logloss(score, target, tol = 10^-30, na.rm = TRUE)
 }
 

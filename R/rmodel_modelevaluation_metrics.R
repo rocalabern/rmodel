@@ -1,15 +1,9 @@
 #' @title r.metric.logloss
 #' @export
-r.metric.logloss <- function(score, target, tol=10^-30)
-{
-  eps = 1e-15;
-  nr <- nrow(target)
-  if (tol>0) target = pmin(1-tol, pmax(tol, target))
-  target = matrix(sapply( target, function(x) max(eps,x)), nrow = nr)      
-  target = matrix(sapply( target, function(x) min(1-eps,x)), nrow = nr)
-  ll = sum(score*log(target) + (1-score)*log(1-target))
-  ll = ll * -1/(nrow(score))      
-  return(ll);
+r.metric.logloss <- function(score, target, tol=10^-30, na.rm = TRUE) {
+  if (tol>0) score = pmin(1-tol, pmax(tol, score))
+  logloss = - mean(target*log(score) + (1-target)*log(1-score), na.rm = na.rm)
+  return(logloss);
 }
 
 #' @title r.metric.auc.roc
