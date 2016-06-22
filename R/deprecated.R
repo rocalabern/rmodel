@@ -1,3 +1,20 @@
+r.abslog.v3 <- function(x) {
+  sign(x)*log10(pmax(1,abs(x), na.rm=TRUE))
+}
+
+r.abslog.v2 <- function(x) {
+  ifelse(x==0,0,(x/abs(x))*log10(pmax(1,abs(x), na.rm=TRUE)))
+}
+
+r.abslog.v1 <- function(x) {  
+  if (is.na(x)) return(0)
+  else
+    if (x>1) return(log10(x))
+  else
+    if (x< (-1)) return( -log10(-x))
+  else return(0)
+}
+
 r.gain.old <- function(score,fuga, perc=0.2, mode = 0) {
   pos = round(perc*length(fuga))
   if (mode==2) {

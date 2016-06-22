@@ -1,3 +1,5 @@
+# roxygen2::roxygenise()
+
 #' @title r.toColumns
 #' @export
 r.toColumns <- function (
