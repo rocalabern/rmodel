@@ -1,5 +1,36 @@
 # roxygen2::roxygenise()
 
+#' @title r.order_normalize
+#' @export
+r.order_normalize <- function(var) {
+  normalized = numeric(length(var))
+  
+  ind = which(is.na(var))
+  if (length(ind)>0) {
+    normalized[ind] = 0.5
+  }
+  
+  ind = which(!is.na(var))
+  if (length(ind)>0) {
+    normalized[ind] = (order(var[ind])-1)/(length(ind)-1)
+  }
+}
+
+#' @title r.quantile_normalize
+#' @export
+r.quantile_normalize <- function(var, nquantiles=10, probs=seq(0,1,by=1/nquantiles), normalize=TRUE, na.rm=TRUE, rightmost.closed = TRUE, all.inside = FALSE) {
+  varSplits = quantile(var, probs=probs, na.rm=na.rm)
+  if (any(duplicated(varSplits))) warning("r.quantile_normalize : Duplicated splits values using quantiles.")
+  varSplits = unique(varSplits)
+  nquantiles = length(varSplits)-1
+ 
+  output = findInterval(var, varSplits, rightmost.closed = rightmost.closed, all.inside = all.inside)
+  if (normalize) {
+    output = (output-1)/(nquantiles-1)
+  }
+  return(output)
+}
+
 #' @title r.create_dummies
 #' @export
 r.create_dummies <- function(
@@ -47,21 +78,6 @@ r.create_dummies <- function(
     }
   }
   invisible(df_output)
-}
-
-#' @title r.quantile_normalize
-#' @export
-r.quantile_normalize <- function(var, nquantiles=10, probs=seq(0,1,by=1/nquantiles), normalize=TRUE, na.rm=TRUE, rightmost.closed = TRUE, all.inside = FALSE) {
-  varSplits = quantile(var, probs=probs, na.rm=na.rm)
-  if (any(duplicated(varSplits))) warning("r.quantile_normalize : Duplicated splits values using quantiles.")
-  varSplits = unique(varSplits)
-  nquantiles = length(varSplits)-1
- 
-  output = findInterval(var, varSplits, rightmost.closed = rightmost.closed, all.inside = all.inside)
-  if (normalize) {
-    output = (output-1)/(nquantiles-1)
-  }
-  return(output)
 }
 
 #' @title r.redistribution
