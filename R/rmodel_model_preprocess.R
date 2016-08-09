@@ -2,12 +2,16 @@
 
 #' @title r.order_normalize
 #' @export
-r.order_normalize <- function(var) {
+r.order_normalize <- function(var, fill.na = TRUE) {
   normalized = numeric(length(var))
   
   ind = which(is.na(var))
   if (length(ind)>0) {
-    normalized[ind] = 0.5
+    if (fill.na) {
+      normalized[ind] = 0.5
+    } else {
+      normalized[ind] = as.numeric(NA)
+    }
   }
   
   ind = which(!is.na(var))

@@ -4,6 +4,6 @@
 \alias{r.order_normalize}
 \title{r.order_normalize}
 \usage{
-r.order_normalize(var)
+r.order_normalize(var, fill.na = TRUE)
 }
 
