@@ -1,3 +1,5 @@
+# roxygen2::roxygenise()
+
 setRefClass("ClassifierMetricsClass",
             fields = c("tp", "fp", "fn", "tn",
                        "accuracy", 

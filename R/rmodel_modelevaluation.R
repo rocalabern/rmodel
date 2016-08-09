@@ -1,3 +1,5 @@
+# roxygen2::roxygenise()
+
 #' @title r.auc
 #' @export
 r.auc <- function(x,y) {
@@ -11,6 +13,22 @@ r.auc.roc <- function(score, target) {
   pred <- ROCR::prediction(score, target)
   AUC = ROCR::performance(pred, "auc")@y.values[[1]]
   return (AUC)
+}
+
+#' @title r.auc.gini
+#' @export
+r.auc.gini <- function(score, target) {
+  pred <- ROCR::prediction(score, target)
+  AUC = ROCR::performance(pred, "auc")@y.values[[1]]
+  GINI = r.auc_to_gini(AUC)
+  return (GINI)
+}
+
+#' @title r.auc_to_gini
+#' @export
+r.auc_to_gini <- function(AUC) {
+  GINI = (AUC-0.5)/0.5
+  return (GINI)
 }
 
 #' @title r.auc.gain

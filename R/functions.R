@@ -1,3 +1,5 @@
+# roxygen2::roxygenise()
+
 #' r.abslog
 #' @title r.abslog
 #' @export

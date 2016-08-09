@@ -1,3 +1,5 @@
+# roxygen2::roxygenise()
+
 #' r.percentils
 #' @export
 r.percentils <- function (var,

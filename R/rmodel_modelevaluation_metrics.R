@@ -1,3 +1,5 @@
+# roxygen2::roxygenise()
+
 #' @title r.metric.logloss
 #' @export
 r.metric.logloss <- function(score, target, tol=10^-30, na.rm = TRUE) {
@@ -12,6 +14,22 @@ r.metric.auc.roc <- function(score, target) {
   pred <- ROCR::prediction(score, target)
   AUC = ROCR::performance(pred, "auc")@y.values[[1]]
   return (AUC)
+}
+
+#' @title r.metric.auc.gini
+#' @export
+r.metric.auc.gini <- function(score, target) {
+  pred <- ROCR::prediction(score, target)
+  AUC = ROCR::performance(pred, "auc")@y.values[[1]]
+  GINI = r.metric.auc_to_gini(AUC)
+  return (GINI)
+}
+
+#' @title r.metric.auc_to_gini
+#' @export
+r.metric.auc_to_gini <- function(AUC) {
+  GINI = (AUC-0.5)/0.5
+  return (GINI)
 }
 
 #' @title r.metric.auc.gain
