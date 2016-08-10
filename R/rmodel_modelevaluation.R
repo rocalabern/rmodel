@@ -66,7 +66,10 @@ r.R2Adjusted <- function (y, x, p, n) {
 #' \cr "neg" = Pessimist/Negative (Minimum)
 #' \cr "avg" = Average of Optimist and Pessimist
 #' @export
-r.gain <- function(score, target, perc=0.2, mode="def") {
+r.gain <- function(score, target, perc=0.2, mode="def", target_value=NULL) {
+  if (!is.null(target_value)) {
+    target = ifelse(target==target_value, 1, 0)
+  }
   pos = round(perc*length(target))
   if (mode=="rnd") {
     # Random
@@ -112,7 +115,10 @@ r.gain <- function(score, target, perc=0.2, mode="def") {
 #' \cr "neg" = Pessimist/Negative (Minimum)
 #' \cr "avg" = Average of Optimist and Pessimist
 #' @export
-r.gains <- function(score, target, npoints=20, mode="def") {
+r.gains <- function(score, target, npoints=20, mode="def", target_value=NULL) {
+  if (!is.null(target_value)) {
+    target = ifelse(target==target_value, 1, 0)
+  }  
   if (mode=="rnd") {
     # Random
     ind <- sample(1:length(target))

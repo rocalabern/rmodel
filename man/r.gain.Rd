@@ -4,7 +4,7 @@
 \alias{r.gain}
 \title{r.gain}
 \usage{
-r.gain(score, target, perc = 0.2, mode = "def")
+r.gain(score, target, perc = 0.2, mode = "def", target_value = NULL)
 }
 \arguments{
 \item{mode}{\cr "def" = As it is
