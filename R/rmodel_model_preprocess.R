@@ -15,7 +15,9 @@ r.order_normalize <- function(var, fill.na = TRUE) {
   }
   
   ind = which(!is.na(var))
-  if (length(ind)>0) {
+  if (length(ind)==1) {
+    normalized[ind] = 0.5
+  } else if (length(ind)>0) {
     normalized[ind] = (order(var[ind])-1)/(length(ind)-1)
   }
 }
