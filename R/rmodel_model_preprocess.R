@@ -20,6 +20,7 @@ r.order_normalize <- function(var, fill.na = TRUE) {
   } else if (length(ind)>0) {
     normalized[ind] = (order(var[ind])-1)/(length(ind)-1)
   }
+  return(normalized)
 }
 
 #' @title r.quantile_normalize
